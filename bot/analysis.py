@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 FLAT_METRICS = [
@@ -84,9 +84,12 @@ def rank_snapshot(snapshot: dict, vid_id: str, cache: dict) -> dict:
         comparables = _comparable_values(metric, hours, vid_id, cache)
         if not comparables:
             continue
-        all_vals = sorted(comparables + [val], reverse=(direction == "higher"))
-        rank = all_vals.index(val) + 1
-        rankings[metric] = {"rank": rank, "total": len(all_vals)}
+        if direction == "higher":
+            rank = sum(1 for v in comparables if v > val) + 1
+        else:
+            rank = sum(1 for v in comparables if v < val) + 1
+        total = len(comparables) + 1
+        rankings[metric] = {"rank": rank, "total": total}
     return rankings
 
 
@@ -100,7 +103,7 @@ def format_report(vid_id: str, name: str, snapshot: dict, rankings: dict, is_new
 
     views_at_hour = snapshot.get("views_at_hour")
     views = snapshot.get("views")
-    if views_at_hour and hours:
+    if views_at_hour is not None and hours is not None:
         lines.append(f"{int(views_at_hour):,} views at hour {int(hours)}")
     elif views:
         lines.append(f"{int(views):,} total views")
@@ -113,8 +116,11 @@ def format_report(vid_id: str, name: str, snapshot: dict, rankings: dict, is_new
         if val is None:
             continue
         rank, total = r["rank"], r["total"]
+        if total == 1:
+            continue  # skip ranking line — no comparison data
         pct_suffix = "%" if metric in ("skipRate", "likeRate", "shareRate") else ""
-        rank_str = "your best ever" if rank == 1 and total > 1 else f"#{rank} of {total} videos at this stage"
-        lines.append(f"{icon} {label} {val}{pct_suffix} → {rank_str}")
+        rank_str = "your best ever" if rank == 1 else f"#{rank} of {total} videos at this stage"
+        display_val = f"{val:.1f}" if metric in ("skipRate", "likeRate", "shareRate") else val
+        lines.append(f"{icon} {label} {display_val}{pct_suffix} → {rank_str}")
 
     return "\n".join(lines)

@@ -102,3 +102,25 @@ def test_format_report_rank_1_shows_best_ever():
     rankings = {"skipRate": {"rank": 1, "total": 4}}
     report = format_report("D7", "Test", snap, rankings, is_new=True)
     assert "best ever" in report
+
+def test_rank_snapshot_tie_gives_same_rank():
+    # Both videos have same views_at_hour — both should be rank 1
+    cache = {
+        "D1": {"id": "D1", "snapshots": [{"hours_since_post": 6, "views_at_hour": 2324}]},
+    }
+    snap = {"hours_since_post": 6, "views_at_hour": 2324}
+    rankings = rank_snapshot(snap, "D2", cache)
+    assert rankings["views_at_hour"]["rank"] == 1
+
+def test_format_report_hours_zero():
+    snap = {"hours_since_post": 0, "views_at_hour": 500, "views": 500}
+    rankings = {}
+    report = format_report("D7", "Test", snap, {"views_at_hour": {"rank": 1, "total": 2}}, is_new=True)
+    assert "Hour 0" in report
+
+def test_format_report_total_one_skips_ranking():
+    snap = {"hours_since_post": 6, "skipRate": 45.0}
+    rankings = {"skipRate": {"rank": 1, "total": 1}}
+    report = format_report("D7", "Test", snap, rankings, is_new=True)
+    # When total == 1, ranking line should NOT appear
+    assert "skip rate" not in report
