@@ -1,0 +1,287 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Instagram Reels Dashboard — Agency Series</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+    <style>
+    :root { color-scheme: light; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5; color: #1a1a1a; padding: 24px; font-size: 14px;
+    }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .header-left h1 { font-size: 22px; font-weight: 800; }
+    .header-left p { color: #666; font-size: 13px; margin-top: 4px; }
+    .cards { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 20px; }
+    .card { background:#fff; border-radius:14px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+    .card-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#999; margin-bottom:8px; }
+    .card-value { font-size:28px; font-weight:800; line-height:1; }
+    .card-sub { font-size:11px; color:#999; margin-top:5px; }
+    .c-neutral{color:#1a1a1a} .c-warn{color:#f59e0b} .c-crit{color:#ef4444} .c-good{color:#22c55e}
+    .charts-row { display:grid; grid-template-columns:1.1fr 1fr .9fr; gap:12px; margin-bottom:20px; }
+    .panel { background:#fff; border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+    .panel-title { font-size:13px; font-weight:700; margin-bottom:14px; }
+    .table-wrap { background:#fff; border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.07); margin-bottom:20px; overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:12.5px; }
+    thead th { text-align:left; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#999; padding:7px 10px; border-bottom:2px solid #f0f0f0; white-space:nowrap; }
+    tbody td { padding:11px 10px; border-bottom:1px solid #f5f5f5; white-space:nowrap; }
+    tbody tr:last-child td { border-bottom:none; font-weight:700; background:#fafafa; }
+    tbody tr:not(:last-child):hover { background:#fafafa; }
+    .day-badge { display:inline-block; background:#1a1a1a; color:#fff; border-radius:7px; padding:3px 9px; font-size:12px; font-weight:800; min-width:36px; text-align:center; }
+    .avg-badge { display:inline-block; background:#666; color:#fff; border-radius:7px; padding:3px 9px; font-size:12px; font-weight:700; }
+    .pill { display:inline-block; border-radius:5px; padding:2px 7px; font-size:11.5px; font-weight:700; }
+    .pill-red{background:#fef2f2;color:#ef4444} .pill-yellow{background:#fffbeb;color:#d97706}
+    .pill-green{background:#f0fdf4;color:#16a34a} .pill-neutral{background:#f5f5f5;color:#555}
+    .watch-bar { display:flex; align-items:center; gap:7px; }
+    .watch-track { height:6px; border-radius:3px; background:#f0f0f0; flex:1; min-width:50px; }
+    .watch-fill { height:6px; border-radius:3px; }
+    .timeline { display:flex; gap:8px; margin-bottom:20px; overflow-x:auto; padding-bottom:4px; }
+    .tl-item { background:#fff; border-radius:10px; padding:11px 14px; box-shadow:0 1px 3px rgba(0,0,0,.07); min-width:130px; flex-shrink:0; }
+    .tl-day { font-weight:800; font-size:14px; margin-bottom:5px; }
+    .tl-story { color:#777; font-size:11px; line-height:1.4; }
+    .health-panel { background:#fff; border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.07); margin-bottom:20px; }
+    .health-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #f0f0f0; }
+    .health-item:last-child { border-bottom:none; }
+    .health-dot { width:9px; height:9px; border-radius:50%; background:#ef4444; flex-shrink:0; margin-top:5px; }
+    .health-text strong { display:block; font-size:13px; color:#ef4444; margin-bottom:4px; }
+    .health-text span { font-size:12px; color:#777; line-height:1.55; }
+    .footer-note { font-size:11px; color:#bbb; text-align:center; margin-top:16px; }
+    .generated-note { font-size:11px; color:#bbb; text-align:right; margin-bottom:8px; }
+    </style>
+    </head>
+    <body>
+
+    <div class="header">
+      <div class="header-left">
+        <h1>Instagram Reels — Agency Series</h1>
+        <p>Building a Brand Marketing Agency · Goal: Maximum Views</p>
+      </div>
+    </div>
+
+<div class="timeline" id="timeline"></div>
+    <div class="cards" id="summary-cards"></div>
+
+    <div class="charts-row">
+      <div class="panel"><div class="panel-title">Views by Day</div><canvas id="viewsChart" height="200"></canvas></div>
+      <div class="panel"><div class="panel-title">Skip Rate vs Retention @3s</div><canvas id="signalsChart" height="200"></canvas></div>
+      <div class="panel"><div class="panel-title">Avg Watch %</div><canvas id="watchChart" height="200"></canvas></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px" id="time-series-panel">
+      <div class="panel-title">Views Over Time — all videos</div>
+      <canvas id="timeSeriesChart" height="120"></canvas>
+    </div>
+
+    <div class="table-wrap">
+      <div class="panel-title" style="margin-bottom:14px">Per-Reel Breakdown</div>
+      <table>
+        <thead><tr>
+          <th>Day</th><th>Views</th><th>Accts Reached</th><th>Length</th>
+          <th>Avg Watch</th><th>Watch %</th><th>Skip Rate</th><th>Ret. @3s</th>
+          <th>Like Rate</th><th>Follow Rate</th><th>Profile Visits</th><th>Top Source</th>
+        </tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="health-panel" id="series-health">
+      <div class="panel-title">🚨 Series Health</div>
+    </div>
+
+    <p class="footer-note">Thresholds · Skip Rate warn &gt;40% / crit &gt;55% · Ret @3s warn &lt;60% / crit &lt;45% · Follow Rate warn &lt;0.20% / crit &lt;0.10% · Watch % warn &lt;40% / crit &lt;25%</p>
+
+    <script>
+function normalizeCacheToFlat(cache) {
+  return Object.values(cache).map(v => {
+    const latest = v.snapshots && v.snapshots.length
+      ? v.snapshots[v.snapshots.length - 1]
+      : {};
+    return { day: v.id, story: v.name, ...latest };
+  });
+}
+
+function renderDashboard(cache) {
+  const DAYS = normalizeCacheToFlat(cache);
+
+  // ── Derived ──────────────────────────────────────────────────────────
+  const watchPct = d => d.reelLength ? Math.round(d.watchTime / d.reelLength * 100) : null;
+  const followRate = d => d.views ? (d.follows / d.views * 100) : 0;
+  const avg = (arr, fn) => { const v = arr.map(fn).filter(x => x !== null && !isNaN(x)); return v.reduce((a,b)=>a+b,0)/v.length; };
+
+  // ── Flag helpers ──────────────────────────────────────────────────────
+  const skipCls  = v => v > 55 ? 'pill-red' : v > 40 ? 'pill-yellow' : 'pill-green';
+  const skipIco  = v => v > 55 ? '🔴' : v > 40 ? '⚠️' : '✓';
+  const ret3Cls  = v => v < 45 ? 'pill-red' : v < 60 ? 'pill-yellow' : 'pill-green';
+  const ret3Ico  = v => v < 45 ? '🔴' : v < 60 ? '⚠️' : '✓';
+  const frCls    = v => v < 0.10 ? 'pill-red' : v < 0.20 ? 'pill-yellow' : 'pill-green';
+  const frIco    = v => v < 0.10 ? '🔴' : v < 0.20 ? '⚠️' : '✓';
+  const wpCls    = v => v === null ? 'pill-neutral' : v < 25 ? 'pill-red' : v < 40 ? 'pill-yellow' : 'pill-green';
+  const wpIco    = v => v === null ? '—' : v < 25 ? '🔴' : v < 40 ? '⚠️' : '✓';
+  const wpColor  = v => v < 25 ? '#ef4444' : v < 40 ? '#f59e0b' : v < 60 ? '#3b82f6' : '#22c55e';
+
+  // ── Timeline ──────────────────────────────────────────────────────────
+  document.getElementById('timeline').innerHTML = DAYS.map(d => `
+    <div class="tl-item"><div class="tl-day">${d.day}</div><div class="tl-story">${d.story}</div></div>
+  `).join('');
+
+  // ── Cards ─────────────────────────────────────────────────────────────
+  const aViews = avg(DAYS, d => d.views);
+  const aSkip  = avg(DAYS, d => d.skipRate);
+  const aRet   = avg(DAYS, d => d.ret3s);
+  const aFR    = avg(DAYS, d => followRate(d));
+  const aWP    = avg(DAYS, d => watchPct(d));
+  const peak   = DAYS.reduce((a,b) => b.views > a.views ? b : a, DAYS[0]);
+  const skipC  = aSkip > 55 ? 'c-crit' : aSkip > 40 ? 'c-warn' : 'c-good';
+  const retC   = aRet  < 45 ? 'c-crit' : aRet  < 60 ? 'c-warn' : 'c-good';
+  const frC    = aFR   < 0.10 ? 'c-crit' : aFR < 0.20 ? 'c-warn' : 'c-good';
+  const wpC    = aWP   < 25 ? 'c-crit' : aWP  < 40 ? 'c-warn' : 'c-good';
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="card"><div class="card-label">Avg Views</div><div class="card-value c-neutral">${Math.round(aViews).toLocaleString()}</div><div class="card-sub">Peak: ${peak.views.toLocaleString()} (${peak.day})</div></div>
+    <div class="card"><div class="card-label">Avg Skip Rate</div><div class="card-value ${skipC}">${aSkip.toFixed(1)}%</div><div class="card-sub">Warn &gt;40% · Crit &gt;55%</div></div>
+    <div class="card"><div class="card-label">Avg Ret. @3s</div><div class="card-value ${retC}">${aRet.toFixed(1)}%</div><div class="card-sub">Warn &lt;60% · Crit &lt;45%</div></div>
+    <div class="card"><div class="card-label">Avg Watch %</div><div class="card-value ${wpC}">${aWP !== null ? aWP.toFixed(1)+'%' : '—'}</div><div class="card-sub">Watch time ÷ reel length</div></div>
+    <div class="card"><div class="card-label">Avg Follow Rate</div><div class="card-value ${frC}">${aFR.toFixed(3)}%</div><div class="card-sub">Warn &lt;0.20% · Crit &lt;0.10%</div></div>
+  `;
+
+  // ── Table ─────────────────────────────────────────────────────────────
+  const rows = DAYS.map(d => {
+    const wp = watchPct(d), fr = followRate(d);
+    const wf = wp !== null ? Math.min(wp,100) : 0;
+    return `<tr>
+      <td><span class="day-badge">${d.day}</span></td>
+      <td>${(d.views||0).toLocaleString()}</td>
+      <td>${(d.reached||0).toLocaleString()}</td>
+      <td>${d.reelLength}s</td>
+      <td>${d.watchTime}s</td>
+      <td><div class="watch-bar"><span class="pill ${wpCls(wp)}">${wp !== null ? wp+'%' : '—'} ${wpIco(wp)}</span><div class="watch-track"><div class="watch-fill" style="width:${wf}%;background:${wpColor(wp||0)}"></div></div></div></td>
+      <td><span class="pill ${skipCls(d.skipRate)}">${d.skipRate}% ${skipIco(d.skipRate)}</span></td>
+      <td><span class="pill ${ret3Cls(d.ret3s)}">${d.ret3s}% ${ret3Ico(d.ret3s)}</span></td>
+      <td>${d.likeRate}%</td>
+      <td><span class="pill ${frCls(fr)}">${fr.toFixed(3)}% ${frIco(fr)}</span></td>
+      <td>${(d.profileVisits||0).toLocaleString()}</td>
+      <td style="font-size:11.5px;color:#666">${d.topSource}</td>
+    </tr>`;
+  });
+  const avgLen = avg(DAYS,d=>d.reelLength), avgWT=avg(DAYS,d=>d.watchTime);
+  rows.push(`<tr>
+    <td><span class="avg-badge">AVG</span></td>
+    <td>${Math.round(aViews).toLocaleString()}</td>
+    <td>${Math.round(avg(DAYS,d=>d.reached)).toLocaleString()}</td>
+    <td>${avgLen.toFixed(1)}s</td><td>${avgWT.toFixed(1)}s</td>
+    <td><span class="pill ${wpCls(aWP)}">${aWP.toFixed(1)}%</span></td>
+    <td><span class="pill ${skipCls(aSkip)}">${aSkip.toFixed(1)}%</span></td>
+    <td><span class="pill ${ret3Cls(aRet)}">${aRet.toFixed(1)}%</span></td>
+    <td>${avg(DAYS,d=>d.likeRate).toFixed(1)}%</td>
+    <td><span class="pill ${frCls(aFR)}">${aFR.toFixed(3)}%</span></td>
+    <td>${Math.round(avg(DAYS,d=>d.profileVisits)).toLocaleString()}</td>
+    <td style="font-size:11.5px;color:#666">—</td>
+  </tr>`);
+  document.getElementById('table-body').innerHTML = rows.join('');
+
+  // ── Charts ────────────────────────────────────────────────────────────
+  const labels = DAYS.map(d => d.day);
+  const barColors = DAYS.map(d => d.skipRate > 55 ? '#ef4444' : d.skipRate > 40 ? '#f59e0b' : '#22c55e');
+
+  new Chart(document.getElementById('viewsChart'), {
+    type:'bar', data:{ labels, datasets:[{ data:DAYS.map(d=>d.views), backgroundColor:barColors, borderRadius:7, borderSkipped:false }] },
+    options:{ responsive:true, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.parsed.y.toLocaleString()+' views'}} },
+      scales:{ y:{beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{color:'#999',font:{size:11},callback:v=>v>=1000?(v/1000)+'k':v}}, x:{grid:{display:false},ticks:{color:'#1a1a1a',font:{size:12,weight:'700'}}} } }
+  });
+
+  new Chart(document.getElementById('signalsChart'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Skip Rate %', data:DAYS.map(d=>d.skipRate), borderColor:'#ef4444', tension:.3, pointRadius:5, pointBackgroundColor:'#ef4444', fill:false },
+      { label:'Retention @3s %', data:DAYS.map(d=>d.ret3s), borderColor:'#3b82f6', tension:.3, pointRadius:5, pointBackgroundColor:'#3b82f6', fill:false },
+      { label:'Warn (Skip 40%)', data:DAYS.map(()=>40), borderColor:'#f59e0b', borderDash:[4,4], borderWidth:1.5, pointRadius:0, fill:false },
+      { label:'Crit (Ret 45%)', data:DAYS.map(()=>45), borderColor:'#ef4444', borderDash:[4,4], borderWidth:1.5, pointRadius:0, fill:false }
+    ]},
+    options:{ responsive:true, plugins:{ legend:{position:'bottom',labels:{font:{size:10},color:'#999',boxWidth:10,padding:8}}, tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y+'%'}} },
+      scales:{ y:{min:30,max:75,grid:{color:'#f0f0f0'},ticks:{color:'#999',font:{size:11},callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{color:'#1a1a1a',font:{size:12,weight:'700'}}} } }
+  });
+
+  const wpData = DAYS.map(d=>watchPct(d));
+  new Chart(document.getElementById('watchChart'), {
+    type:'bar', data:{ labels, datasets:[{ data:wpData, backgroundColor:wpData.map(v=>wpColor(v||0)), borderRadius:7, borderSkipped:false }] },
+    options:{ responsive:true, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.parsed.y+'% watched'}} },
+      scales:{ y:{beginAtZero:true,max:100,grid:{color:'#f0f0f0'},ticks:{color:'#999',font:{size:11},callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{color:'#1a1a1a',font:{size:12,weight:'700'}}} } }
+  });
+
+  // ── Time-Series Panel ─────────────────────────────────────────────────
+  const timeSeriesSnapshots = [];
+  Object.values(cache).forEach(v => {
+    v.snapshots.forEach(s => {
+      if (s.hours_since_post !== null && s.views_at_hour !== null) {
+        timeSeriesSnapshots.push({ vid: v.id, hours: s.hours_since_post, views: s.views_at_hour });
+      }
+    });
+  });
+
+  if (timeSeriesSnapshots.length > 0 && document.getElementById('timeSeriesChart')) {
+    const colors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4'];
+    const byVideo = {};
+    timeSeriesSnapshots.forEach(s => {
+      if (!byVideo[s.vid]) byVideo[s.vid] = [];
+      byVideo[s.vid].push({ x: s.hours, y: s.views });
+    });
+    const datasets = Object.entries(byVideo).map(([vid, pts], i) => ({
+      label: vid,
+      data: pts.sort((a,b) => a.x - b.x),
+      borderColor: colors[i % colors.length],
+      tension: 0.3, pointRadius: 5, fill: false,
+    }));
+    new Chart(document.getElementById('timeSeriesChart'), {
+      type: 'line',
+      data: { datasets },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'Hours since post' } },
+          y: { beginAtZero: true, title: { display: true, text: 'Views' } }
+        }
+      }
+    });
+  }
+
+  // ── Series Health ─────────────────────────────────────────────────────
+  const items = [];
+  if (aSkip > 40) {
+    const crit = DAYS.filter(d=>d.skipRate>55).map(d=>d.day).join(', ');
+    items.push(`<div class="health-item"><div class="health-dot"></div><div class="health-text">
+      <strong>Skip Rate: ${aSkip.toFixed(1)}% average${crit?' — critical on '+crit:''}</strong>
+      <span>Instagram ranks skip rate as the #1 signal impacting reach.</span>
+    </div></div>`);
+  }
+  if (aFR < 0.20) {
+    const crit = DAYS.filter(d=>followRate(d)<0.10).map(d=>d.day).join(', ');
+    items.push(`<div class="health-item"><div class="health-dot"></div><div class="health-text">
+      <strong>Follow Rate: ${aFR.toFixed(3)}% average — critical on ${crit||'multiple days'}</strong>
+      <span>The series isn't converting viewers into subscribers.</span>
+    </div></div>`);
+  }
+  if (aWP < 50) {
+    const low = DAYS.filter(d=>{const w=watchPct(d); return w!==null && w<40;}).map(d=>d.day).join(', ');
+    items.push(`<div class="health-item"><div class="health-dot" style="background:#f59e0b"></div><div class="health-text">
+      <strong>Avg Watch %: ${aWP.toFixed(1)}%${low?' — below 40% on '+low:''}</strong>
+      <span>Viewers aren't reaching the end of longer reels.</span>
+    </div></div>`);
+  }
+  document.getElementById('series-health').innerHTML =
+    '<div class="panel-title">🚨 Series Health</div>' +
+    (items.join('') || '<p style="color:#888;font-size:13px;margin-top:8px">No critical alerts. Keep it up.</p>');
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────
+fetch('metrics_cache.json')
+  .then(r => r.json())
+  .then(renderDashboard)
+  .catch(e => {
+    document.body.innerHTML = `<p style="padding:40px;color:#ef4444">Failed to load metrics_cache.json: ${e}</p>`;
+  });
+    </script>
+    </body>
+    </html>
