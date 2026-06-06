@@ -4,3 +4,12 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .superpowers/
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+.mypy_cache/
