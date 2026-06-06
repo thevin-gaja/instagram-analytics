@@ -171,7 +171,7 @@ function renderDashboard(cache) {
     <td>${Math.round(aViews).toLocaleString()}</td>
     <td>${Math.round(avg(DAYS,d=>d.reached)).toLocaleString()}</td>
     <td>${avgLen.toFixed(1)}s</td><td>${avgWT.toFixed(1)}s</td>
-    <td><span class="pill ${wpCls(aWP)}">${aWP.toFixed(1)}%</span></td>
+    <td><span class="pill ${wpCls(aWP)}">${isNaN(aWP) ? '—' : aWP.toFixed(1)+'%'}</span></td>
     <td><span class="pill ${skipCls(aSkip)}">${aSkip.toFixed(1)}%</span></td>
     <td><span class="pill ${ret3Cls(aRet)}">${aRet.toFixed(1)}%</span></td>
     <td>${avg(DAYS,d=>d.likeRate).toFixed(1)}%</td>
@@ -213,14 +213,14 @@ function renderDashboard(cache) {
   // ── Time-Series Panel ─────────────────────────────────────────────────
   const timeSeriesSnapshots = [];
   Object.values(cache).forEach(v => {
-    v.snapshots.forEach(s => {
+    (v.snapshots || []).forEach(s => {
       if (s.hours_since_post !== null && s.views_at_hour !== null) {
         timeSeriesSnapshots.push({ vid: v.id, hours: s.hours_since_post, views: s.views_at_hour });
       }
     });
   });
 
-  if (timeSeriesSnapshots.length > 0 && document.getElementById('timeSeriesChart')) {
+  if (timeSeriesSnapshots.length > 0) {
     const colors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4'];
     const byVideo = {};
     timeSeriesSnapshots.forEach(s => {
