@@ -93,6 +93,71 @@ def rank_snapshot(snapshot: dict, vid_id: str, cache: dict) -> dict:
     return rankings
 
 
+def _format_snapshot_block(snapshot: dict, rankings: dict) -> list:
+    """Return a list of lines for a single snapshot's metrics (no header, no divider)."""
+    hours = snapshot.get("hours_since_post")
+    lines = []
+
+    views_at_hour = snapshot.get("views_at_hour")
+    views = snapshot.get("views")
+    if views_at_hour is not None and hours is not None:
+        lines.append(f"{int(views_at_hour):,} views at hour {int(hours)}")
+    elif views:
+        lines.append(f"{int(views):,} total views")
+
+    for metric, (icon, label) in METRIC_LABELS.items():
+        r = rankings.get(metric)
+        if r is None:
+            continue
+        val = snapshot.get(metric)
+        if val is None:
+            continue
+        rank, total = r["rank"], r["total"]
+        if total == 1:
+            continue
+        pct_suffix = "%" if metric in ("skipRate", "likeRate", "shareRate") else ""
+        rank_str = "your best ever" if rank == 1 else f"#{rank} of {total} videos at this stage"
+        display_val = f"{val:.1f}" if metric in ("skipRate", "likeRate", "shareRate") else val
+        lines.append(f"{icon} {label} {display_val}{pct_suffix} → {rank_str}")
+
+    return lines
+
+
+def format_batch_report(
+    vid_id: str,
+    name: str,
+    snapshots_and_rankings: list,
+    is_new: bool,
+) -> str:
+    """Format a Telegram comparison report for one or more snapshots submitted together."""
+    action = "Saved" if is_new else "Updated"
+    count = len(snapshots_and_rankings)
+    count_label = "1 snapshot" if count == 1 else f"{count} snapshots"
+
+    lines = [f"✅ {action} — {vid_id} · {count_label}", ""]
+
+    # Sort: snapshots with hours ascending, None hours last
+    sorted_pairs = sorted(
+        snapshots_and_rankings,
+        key=lambda pair: (pair[0].get("hours_since_post") is None,
+                          pair[0].get("hours_since_post") or 0),
+    )
+
+    if count == 1:
+        snapshot, rankings = sorted_pairs[0]
+        lines.extend(_format_snapshot_block(snapshot, rankings))
+    else:
+        for i, (snapshot, rankings) in enumerate(sorted_pairs):
+            if i > 0:
+                lines.append("")
+            hours = snapshot.get("hours_since_post")
+            divider = f"── Hour {int(hours)} ──" if hours is not None else "── snapshot ──"
+            lines.append(divider)
+            lines.extend(_format_snapshot_block(snapshot, rankings))
+
+    return "\n".join(lines)
+
+
 def format_report(vid_id: str, name: str, snapshot: dict, rankings: dict, is_new: bool) -> str:
     """Format the Telegram comparison report message."""
     action = "Saved" if is_new else "Updated"

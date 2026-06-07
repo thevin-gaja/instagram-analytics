@@ -1,5 +1,5 @@
 import pytest
-from bot.analysis import build_snapshot, rank_snapshot, format_report, next_video_id
+from bot.analysis import build_snapshot, rank_snapshot, format_report, next_video_id, format_batch_report
 
 # ── next_video_id ──────────────────────────────────────────────────────────
 
@@ -124,3 +124,63 @@ def test_format_report_total_one_skips_ranking():
     report = format_report("D7", "Test", snap, rankings, is_new=True)
     # When total == 1, ranking line should NOT appear
     assert "skip rate" not in report
+
+# ── format_batch_report ────────────────────────────────────────────────────
+
+def test_format_batch_report_single_snapshot():
+    snap = {"hours_since_post": 6, "views_at_hour": 2324, "views": 2635}
+    rankings = {"views_at_hour": {"rank": 2, "total": 5}}
+    report = format_batch_report("D7", "Test Video", [(snap, rankings)], is_new=True)
+    assert "1 snapshot" in report
+    assert "Saved" in report
+    assert "D7" in report
+    # No section divider for a single snapshot
+    assert "──" not in report
+
+
+def test_format_batch_report_multiple_snapshots_has_dividers():
+    snap1 = {"hours_since_post": 6, "views_at_hour": 2324, "views": 2635}
+    snap2 = {"hours_since_post": 24, "views_at_hour": 11300, "views": 12000}
+    rankings1 = {"views_at_hour": {"rank": 2, "total": 5}}
+    rankings2 = {"views_at_hour": {"rank": 1, "total": 5}}
+    report = format_batch_report("D7", "Test Video", [(snap1, rankings1), (snap2, rankings2)], is_new=True)
+    assert "2 snapshots" in report
+    assert "── Hour 6 ──" in report
+    assert "── Hour 24 ──" in report
+
+
+def test_format_batch_report_sorted_by_hour():
+    # Pass hour 24 first, hour 6 second — output must have hour 6 before hour 24
+    snap_h24 = {"hours_since_post": 24, "views_at_hour": 11300, "views": 12000}
+    snap_h6 = {"hours_since_post": 6, "views_at_hour": 2324, "views": 2635}
+    rankings = {}
+    report = format_batch_report(
+        "D7", "Test Video",
+        [(snap_h24, rankings), (snap_h6, rankings)],
+        is_new=True,
+    )
+    pos_h6 = report.index("── Hour 6 ──")
+    pos_h24 = report.index("── Hour 24 ──")
+    assert pos_h6 < pos_h24
+
+
+def test_format_batch_report_none_hours_sort_last():
+    snap_hours = {"hours_since_post": 6, "views_at_hour": 2324, "views": 2635}
+    snap_none = {"hours_since_post": None, "views": 5000}
+    rankings = {}
+    report = format_batch_report(
+        "D7", "Test Video",
+        [(snap_none, rankings), (snap_hours, rankings)],
+        is_new=True,
+    )
+    pos_hour6 = report.index("── Hour 6 ──")
+    pos_snapshot = report.index("── snapshot ──")
+    assert pos_hour6 < pos_snapshot
+
+
+def test_format_batch_report_updated_label():
+    snap = {"hours_since_post": 12, "views": 5000}
+    rankings = {}
+    report = format_batch_report("D2", "Old Video", [(snap, rankings)], is_new=False)
+    assert "Updated" in report
+    assert "Saved" not in report
