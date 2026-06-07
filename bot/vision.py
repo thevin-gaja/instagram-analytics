@@ -35,6 +35,10 @@ Required keys:
 }"""
 
 
+def _media_type(image_bytes: bytes) -> str:
+    return "image/jpeg" if image_bytes[:2] == b"\xff\xd8" else "image/png"
+
+
 def extract_metrics(image_bytes: bytes, api_key: str) -> dict:
     """Extract Instagram analytics metrics from a screenshot using Claude Vision."""
     client = anthropic.Anthropic(api_key=api_key)
@@ -50,7 +54,7 @@ def extract_metrics(image_bytes: bytes, api_key: str) -> dict:
                     "type": "image",
                     "source": {
                         "type": "base64",
-                        "media_type": "image/png",
+                        "media_type": _media_type(image_bytes),
                         "data": image_data,
                     },
                 },
