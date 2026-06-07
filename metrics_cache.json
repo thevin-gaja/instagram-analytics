@@ -202,5 +202,39 @@
         "ageBracket": "18-24 (56.2%)"
       }
     ]
+  },
+  "D7": {
+    "id": "D7",
+    "name": "Speak When I Name - blueshirt",
+    "posted_at": "2026-06-06T23:19:57.926734+00:00",
+    "snapshots": [
+      {
+        "captured_at": "2026-06-07T00:19:57.926705+00:00",
+        "hours_since_post": 1,
+        "views": 1654,
+        "reached": 740,
+        "reelLength": null,
+        "watchTime": 14,
+        "follows": 0,
+        "topSource": null,
+        "skipRate": null,
+        "likeRate": null,
+        "shareRate": null,
+        "saveRate": null,
+        "repostRate": null,
+        "commentRate": null,
+        "ret3s": null,
+        "retEnd": null,
+        "profileVisits": null,
+        "likes": 55,
+        "comments": 8,
+        "reposts": 3,
+        "shares": 2,
+        "saves": 3,
+        "nonFollower": null,
+        "ageBracket": null,
+        "views_at_hour": 1376
+      }
+    ]
   }
 }
