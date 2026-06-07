@@ -150,8 +150,13 @@ async def question_received(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     """User typed a question — call Claude and reply."""
     question = update.message.text.strip()
     msg = await update.message.reply_text("⏳ Thinking...")
-    cache, _ = load_cache(context.bot_data["repo"])
-    answer = answer_question(question, cache, context.bot_data["anthropic_key"])
+    try:
+        cache, _ = load_cache(context.bot_data["repo"])
+        answer = answer_question(question, cache, context.bot_data["anthropic_key"])
+    except Exception:
+        await msg.delete()
+        await update.message.reply_text("Sorry, something went wrong. Please try again.")
+        return ASKING_QUESTION
     await msg.delete()
     keyboard = [[
         InlineKeyboardButton("💬 Ask another", callback_data="ask_question"),
