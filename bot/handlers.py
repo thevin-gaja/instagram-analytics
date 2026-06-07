@@ -13,8 +13,9 @@ from telegram.ext import (
 from bot.github_store import load_cache, save_cache
 from bot.vision import extract_metrics
 from bot.analysis import next_video_id, build_snapshot, rank_snapshot, format_report, format_batch_report
+from bot.qa import answer_question
 
-CHOOSING_TYPE, ENTERING_NAME, CHOOSING_VIDEO = range(3)
+CHOOSING_TYPE, ENTERING_NAME, CHOOSING_VIDEO, ASKING_QUESTION = range(4)
 
 
 async def photo_received(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -79,7 +80,7 @@ async def name_entered(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     msg = await update.message.reply_text("⏳ Processing...")
     await _process_and_reply(context, chat_id=update.message.chat_id)
     await msg.delete()
-    return ConversationHandler.END
+    return ASKING_QUESTION
 
 
 async def video_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -89,7 +90,7 @@ async def video_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     context.user_data["is_new"] = False
     await update.callback_query.edit_message_text("⏳ Processing...")
     await _process_and_reply(context, chat_id=update.callback_query.message.chat_id)
-    return ConversationHandler.END
+    return ASKING_QUESTION
 
 
 async def _process_and_reply(context: ContextTypes.DEFAULT_TYPE, chat_id: int) -> None:
@@ -130,7 +131,42 @@ async def _process_and_reply(context: ContextTypes.DEFAULT_TYPE, chat_id: int) -
     save_cache(repo, cache, sha, f"snapshot: {vid_id} x{len(snapshots_added)}")
 
     report = format_batch_report(vid_id, cache[vid_id]["name"], snapshots_added, is_new)
-    await context.bot.send_message(chat_id=chat_id, text=report)
+    keyboard = [[InlineKeyboardButton("💬 Ask a question", callback_data="ask_question")]]
+    await context.bot.send_message(
+        chat_id=chat_id,
+        text=report,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+
+async def ask_question_tap(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """User tapped 'Ask a question'."""
+    await update.callback_query.answer()
+    await update.callback_query.message.reply_text("What do you want to know?")
+    return ASKING_QUESTION
+
+
+async def question_received(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """User typed a question — call Claude and reply."""
+    question = update.message.text.strip()
+    msg = await update.message.reply_text("⏳ Thinking...")
+    cache, _ = load_cache(context.bot_data["repo"])
+    answer = answer_question(question, cache, context.bot_data["anthropic_key"])
+    await msg.delete()
+    keyboard = [[
+        InlineKeyboardButton("💬 Ask another", callback_data="ask_question"),
+        InlineKeyboardButton("✅ Done", callback_data="done"),
+    ]]
+    await update.message.reply_text(answer, reply_markup=InlineKeyboardMarkup(keyboard))
+    return ASKING_QUESTION
+
+
+async def done_tap(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """User tapped 'Done' to end the Q&A session."""
+    await update.callback_query.answer()
+    await update.callback_query.edit_message_reply_markup(reply_markup=None)
+    await update.callback_query.message.reply_text("Done! Send another screenshot anytime.")
+    return ConversationHandler.END
 
 
 def build_conversation_handler() -> ConversationHandler:
@@ -147,6 +183,11 @@ def build_conversation_handler() -> ConversationHandler:
             ],
             CHOOSING_VIDEO: [
                 CallbackQueryHandler(video_selected, pattern="^vid_")
+            ],
+            ASKING_QUESTION: [
+                CallbackQueryHandler(ask_question_tap, pattern="^ask_question$"),
+                CallbackQueryHandler(done_tap, pattern="^done$"),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, question_received),
             ],
         },
         fallbacks=[],
