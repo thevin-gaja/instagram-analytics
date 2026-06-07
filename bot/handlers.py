@@ -12,7 +12,7 @@ from telegram.ext import (
 
 from bot.github_store import load_cache, save_cache
 from bot.vision import extract_metrics
-from bot.analysis import next_video_id, build_snapshot, rank_snapshot, format_report
+from bot.analysis import next_video_id, build_snapshot, rank_snapshot, format_report, format_batch_report
 
 CHOOSING_TYPE, ENTERING_NAME, CHOOSING_VIDEO = range(3)
 
@@ -23,7 +23,8 @@ async def photo_received(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     file = await context.bot.get_file(photo.file_id)
     buf = io.BytesIO()
     await file.download_to_memory(buf)
-    context.user_data["image_bytes"] = buf.getvalue()
+    context.user_data["image_bytes"] = [buf.getvalue()]
+    context.user_data["media_group_id"] = update.message.media_group_id
 
     keyboard = [[
         InlineKeyboardButton("✨ New video", callback_data="new"),
@@ -33,6 +34,19 @@ async def photo_received(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         "Got it! Is this a new video or an existing one?",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
+    return CHOOSING_TYPE
+
+
+async def more_photo_received(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Additional photo from same album — silently buffer it."""
+    incoming_group = update.message.media_group_id
+    stored_group = context.user_data.get("media_group_id")
+    if incoming_group is not None and incoming_group == stored_group:
+        photo = update.message.photo[-1]
+        file = await context.bot.get_file(photo.file_id)
+        buf = io.BytesIO()
+        await file.download_to_memory(buf)
+        context.user_data["image_bytes"].append(buf.getvalue())
     return CHOOSING_TYPE
 
 
@@ -79,41 +93,43 @@ async def video_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 
 async def _process_and_reply(context: ContextTypes.DEFAULT_TYPE, chat_id: int) -> None:
-    """Extract metrics, save snapshot, send report."""
+    """Extract metrics, save snapshots, send report."""
     repo = context.bot_data["repo"]
     api_key = context.bot_data["anthropic_key"]
-    image_bytes = context.user_data["image_bytes"]
+    all_image_bytes = context.user_data["image_bytes"]  # always a list
     is_new = context.user_data["is_new"]
 
-    metrics = extract_metrics(image_bytes, api_key)
     cache, sha = load_cache(repo)
     now = datetime.now(timezone.utc).isoformat()
 
     if is_new:
+        # Extract first image to get hours_since_post for posted_at calculation
+        first_metrics = extract_metrics(all_image_bytes[0], api_key)
         vid_id = next_video_id(cache)
         name = context.user_data["video_name"]
-        hours = metrics.get("hours_since_post")
+        hours = first_metrics.get("hours_since_post")
         posted_at = (
             (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
             if hours is not None
             else now
         )
-        cache[vid_id] = {
-            "id": vid_id,
-            "name": name,
-            "posted_at": posted_at,
-            "snapshots": [],
-        }
+        cache[vid_id] = {"id": vid_id, "name": name, "posted_at": posted_at, "snapshots": []}
+        metrics_list = [first_metrics] + [extract_metrics(img, api_key) for img in all_image_bytes[1:]]
     else:
         vid_id = context.user_data["video_id"]
         posted_at = cache[vid_id].get("posted_at")
+        metrics_list = [extract_metrics(img, api_key) for img in all_image_bytes]
 
-    snapshot = build_snapshot(metrics, now, posted_at)
-    cache[vid_id]["snapshots"].append(snapshot)
-    rankings = rank_snapshot(snapshot, vid_id, cache)
-    save_cache(repo, cache, sha, f"snapshot: {vid_id} hour={snapshot.get('hours_since_post', '?')}")
+    snapshots_added = []
+    for metrics in metrics_list:
+        snapshot = build_snapshot(metrics, now, posted_at)
+        rankings = rank_snapshot(snapshot, vid_id, cache)   # rank BEFORE append
+        cache[vid_id]["snapshots"].append(snapshot)          # append AFTER rank
+        snapshots_added.append((snapshot, rankings))
 
-    report = format_report(vid_id, cache[vid_id]["name"], snapshot, rankings, is_new)
+    save_cache(repo, cache, sha, f"snapshot: {vid_id} x{len(snapshots_added)}")
+
+    report = format_batch_report(vid_id, cache[vid_id]["name"], snapshots_added, is_new)
     await context.bot.send_message(chat_id=chat_id, text=report)
 
 
@@ -122,6 +138,7 @@ def build_conversation_handler() -> ConversationHandler:
         entry_points=[MessageHandler(filters.PHOTO, photo_received)],
         states={
             CHOOSING_TYPE: [
+                MessageHandler(filters.PHOTO, more_photo_received),  # must be first
                 CallbackQueryHandler(new_chosen, pattern="^new$"),
                 CallbackQueryHandler(existing_chosen, pattern="^existing$"),
             ],
