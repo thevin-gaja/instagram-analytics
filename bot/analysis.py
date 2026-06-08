@@ -55,21 +55,30 @@ def build_snapshot(metrics: dict, captured_at: str, posted_at: Optional[str]) ->
 
 
 def _comparable_values(metric: str, hours: Optional[float], vid_id: str, cache: dict) -> list:
-    """Collect metric values from other videos' snapshots within the time window."""
+    """For each other video, pick their closest timed snapshot and return its metric value.
+
+    When the current snapshot has hour context, only videos with timed snapshots are
+    included — videos with no hour data (e.g. legacy entries) are skipped so their
+    final totals don't pollute early-stage comparisons.
+    """
     result = []
     for other_id, video in cache.items():
         if other_id == vid_id:
             continue
-        for snap in video.get("snapshots", []):
-            val = snap.get(metric)
-            snap_hours = snap.get("hours_since_post")
-            if val is None:
+        snapshots = [s for s in video.get("snapshots", []) if s.get(metric) is not None]
+        if not snapshots:
+            continue
+        if hours is not None:
+            # Only compare against videos that have at least one timed snapshot
+            timed = [s for s in snapshots if s.get("hours_since_post") is not None]
+            if not timed:
                 continue
-            if hours is not None and snap_hours is not None:
-                window = max(hours * 0.25, 1.0)
-                if abs(snap_hours - hours) > window:
-                    continue
-            result.append(val)
+            # Pick the single snapshot closest in time to our current hour
+            closest = min(timed, key=lambda s: abs(s["hours_since_post"] - hours))
+            result.append(closest[metric])
+        else:
+            # No time context — use the most recent snapshot
+            result.append(snapshots[-1][metric])
     return result
 
 

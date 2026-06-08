@@ -71,14 +71,40 @@ def test_rank_snapshot_no_comparables_returns_empty():
     rankings = rank_snapshot(snap, "D1", cache)
     assert rankings == {}
 
-def test_rank_snapshot_ignores_out_of_window_hours():
-    # D1 has a snapshot at hour 24 — too far from hour 6 (window = max(6*0.25,1) = 1.5h)
+def test_rank_snapshot_uses_closest_snapshot_per_video():
+    # D1 only has a snapshot at hour 24 — new logic uses closest available, not a strict window
     cache = {
         "D1": {"id": "D1", "snapshots": [{"hours_since_post": 24, "views": 9999}]},
     }
     snap = {"hours_since_post": 6, "views": 2000}
     rankings = rank_snapshot(snap, "D2", cache)
+    # D1's hour-24 is closest available → included → D2's 2000 loses to 9999 → rank 2
+    assert rankings["views"]["rank"] == 2
+    assert rankings["views"]["total"] == 2
+
+def test_rank_snapshot_excludes_null_hour_videos_when_timed():
+    # When current snapshot has hours, videos with only null-hour snapshots are excluded
+    cache = {
+        "D1": {"id": "D1", "snapshots": [{"hours_since_post": None, "views": 9999}]},
+    }
+    snap = {"hours_since_post": 6, "views": 2000}
+    rankings = rank_snapshot(snap, "D2", cache)
     assert "views" not in rankings
+
+def test_rank_snapshot_uses_one_snapshot_per_video():
+    # Video with multiple snapshots — only the closest one is used, not both
+    cache = {
+        "D1": {"id": "D1", "snapshots": [
+            {"hours_since_post": 6, "views": 3000},
+            {"hours_since_post": 24, "views": 8000},
+        ]},
+    }
+    snap = {"hours_since_post": 6, "views": 5000}
+    rankings = rank_snapshot(snap, "D2", cache)
+    # D1's closest to hour 6 is their hour-6 snapshot (views=3000), not hour-24
+    # Our 5000 > their 3000 → rank 1 of 2
+    assert rankings["views"]["rank"] == 1
+    assert rankings["views"]["total"] == 2
 
 # ── format_report ──────────────────────────────────────────────────────────
 
