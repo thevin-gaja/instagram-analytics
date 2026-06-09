@@ -918,5 +918,73 @@
         "views_at_hour": 1070
       }
     ]
+  },
+  "V8": {
+    "id": "V8",
+    "name": "Day 7",
+    "posted_at": null,
+    "snapshots": [
+      {
+        "captured_at": null,
+        "hours_since_post": null,
+        "views_at_hour": null,
+        "views": 7323,
+        "reached": 3566,
+        "reelLength": null,
+        "watchTime": 13,
+        "follows": 4,
+        "topSource": null,
+        "skipRate": 57.9,
+        "likeRate": 3.5,
+        "shareRate": 0.5,
+        "saveRate": 0.1,
+        "repostRate": 0.2,
+        "commentRate": 0.7,
+        "ret3s": 51,
+        "retEnd": null,
+        "profileVisits": null,
+        "likes": 156,
+        "comments": 33,
+        "reposts": 9,
+        "shares": 23,
+        "saves": 5,
+        "nonFollower": null,
+        "ageBracket": null
+      }
+    ]
+  },
+  "V9": {
+    "id": "V9",
+    "name": "Day 8",
+    "posted_at": null,
+    "snapshots": [
+      {
+        "captured_at": null,
+        "hours_since_post": null,
+        "views_at_hour": null,
+        "views": 5283,
+        "reached": 2341,
+        "reelLength": null,
+        "watchTime": 8,
+        "follows": 3,
+        "topSource": null,
+        "skipRate": 55.4,
+        "likeRate": 3.8,
+        "shareRate": 0.6,
+        "saveRate": 0.1,
+        "repostRate": 0.2,
+        "commentRate": 0.3,
+        "ret3s": 54,
+        "retEnd": null,
+        "profileVisits": null,
+        "likes": 116,
+        "comments": 10,
+        "reposts": 7,
+        "shares": 16,
+        "saves": 2,
+        "nonFollower": null,
+        "ageBracket": null
+      }
+    ]
   }
 }
