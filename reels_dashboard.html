@@ -417,13 +417,15 @@ function fmt(v, decimals) {
   return Number(v).toLocaleString();
 }
 
-// Closest-by-value helper — finds snapshot with hours_since_post nearest to target
-function closestHourSnap(snapshots, targetHour) {
+// Closest-by-value helper — finds snapshot with hours_since_post nearest to target,
+// only if within 36 hours of the target (prevents a 24h snap standing in for 72h)
+function closestHourSnap(snapshots, targetHour, maxDelta = 36) {
   const timed = snapshots.filter(s => s.hours_since_post != null && s.views_at_hour != null);
   if (timed.length === 0) return null;
-  return timed.reduce((best, s) =>
+  const best = timed.reduce((best, s) =>
     Math.abs(s.hours_since_post - targetHour) < Math.abs(best.hours_since_post - targetHour) ? s : best
   );
+  return Math.abs(best.hours_since_post - targetHour) <= maxDelta ? best : null;
 }
 
 // ── Data normalisation ───────────────────────────────────────────────────────
@@ -444,14 +446,22 @@ function normalizeCacheToFlat(cache) {
     const day1Views = d1Snap ? d1Snap.views_at_hour : null;
     const day3Views = d3Snap ? d3Snap.views_at_hour : null;
 
-    const views    = latest ? latest.views    : null;
-    const reached  = latest ? latest.reached  : null;
-    const watchTime = latest ? latest.watchTime : null;
-    const skipRate = latest ? latest.skipRate : null;
-    const likeRate = latest ? latest.likeRate : null;
-    const ret3s    = latest ? latest.ret3s    : null;
-    const retEnd   = latest ? latest.retEnd   : null;
-    const follows  = latest ? latest.follows  : null;
+    // For each metric, take the most recent non-null value across all snapshots
+    // so that fragmented submissions (e.g. separate engagement screenshots) are merged
+    function latestField(field) {
+      for (let i = snaps.length - 1; i >= 0; i--) {
+        if (snaps[i][field] != null) return snaps[i][field];
+      }
+      return null;
+    }
+    const views    = latestField('views');
+    const reached  = latestField('reached');
+    const watchTime = latestField('watchTime');
+    const skipRate = latestField('skipRate');
+    const likeRate = latestField('likeRate');
+    const ret3s    = latestField('ret3s');
+    const retEnd   = latestField('retEnd');
+    const follows  = latestField('follows');
 
     const multiplier = (views != null && day1Views != null && day1Views > 0)
       ? parseFloat((views / day1Views).toFixed(1))
@@ -461,13 +471,27 @@ function normalizeCacheToFlat(cache) {
       ? parseFloat((follows / views * 1000).toFixed(2))
       : null;
 
+    // Build a merged latest object: for each field, use the most recent non-null value
+    // across all snapshots so fragmented submissions (e.g. separate engagement screenshots)
+    // are presented as a single coherent snapshot in the metrics table
+    const mergedLatest = snaps.length > 0 ? (() => {
+      const merged = {};
+      const allKeys = Object.keys(snaps[0]);
+      allKeys.forEach(key => {
+        for (let i = snaps.length - 1; i >= 0; i--) {
+          if (snaps[i][key] != null) { merged[key] = snaps[i][key]; break; }
+        }
+      });
+      return merged;
+    })() : null;
+
     return {
       id: video.id,
       name: video.name,
       views, reached, watchTime, skipRate, likeRate, ret3s, retEnd, follows,
       day1Views, day3Views, multiplier, follows_per_1k,
       snapshots: snaps,
-      latest,
+      latest: mergedLatest,
     };
   });
 }
@@ -482,6 +506,8 @@ tabBtns.forEach(btn => {
     tabPanels.forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    // Resize all charts after the tab becomes visible so Chart.js repaints correctly
+    Object.values(charts).forEach(c => c && c.resize());
   });
 });
 
@@ -574,7 +600,7 @@ function renderOverview(rows) {
       labels,
       datasets: [{
         label: 'Skip Rate',
-        data: rows.map(r => r.skipRate ?? 0),
+        data: rows.map(r => r.skipRate),
         backgroundColor: rows.map(r => skipColor(r.skipRate)),
         borderWidth: 0,
         borderRadius: 4,
@@ -606,7 +632,7 @@ function renderOverview(rows) {
       labels,
       datasets: [{
         label: '3s Retention',
-        data: rows.map(r => r.ret3s ?? 0),
+        data: rows.map(r => r.ret3s),
         backgroundColor: 'rgba(131,58,180,0.75)',
         borderColor: '#833AB4',
         borderWidth: 1,
@@ -639,7 +665,7 @@ function renderOverview(rows) {
       labels,
       datasets: [{
         label: 'Like Rate',
-        data: rows.map(r => r.likeRate ?? 0),
+        data: rows.map(r => r.likeRate),
         backgroundColor: 'rgba(74,222,128,0.75)',
         borderColor: '#4ade80',
         borderWidth: 1,
