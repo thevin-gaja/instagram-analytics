@@ -1,6 +1,6 @@
 {
-  "D1": {
-    "id": "D1",
+  "V1": {
+    "id": "V1",
     "name": "Announcing the agency launch",
     "posted_at": null,
     "snapshots": [
@@ -114,8 +114,8 @@
       }
     ]
   },
-  "D2": {
-    "id": "D2",
+  "V2": {
+    "id": "V2",
     "name": "Strategy: going after biggest creators",
     "posted_at": null,
     "snapshots": [
@@ -229,8 +229,8 @@
       }
     ]
   },
-  "D3": {
-    "id": "D3",
+  "V3": {
+    "id": "V3",
     "name": "Targeting KSI specifically",
     "posted_at": null,
     "snapshots": [
@@ -344,8 +344,8 @@
       }
     ]
   },
-  "D4": {
-    "id": "D4",
+  "V4": {
+    "id": "V4",
     "name": "Secured a meeting with KSI in 2 days",
     "posted_at": null,
     "snapshots": [
@@ -459,8 +459,8 @@
       }
     ]
   },
-  "D5": {
-    "id": "D5",
+  "V5": {
+    "id": "V5",
     "name": "TBD",
     "posted_at": null,
     "snapshots": [
@@ -574,8 +574,8 @@
       }
     ]
   },
-  "D6": {
-    "id": "D6",
+  "V6": {
+    "id": "V6",
     "name": "TBD",
     "posted_at": null,
     "snapshots": [
@@ -689,8 +689,8 @@
       }
     ]
   },
-  "D7": {
-    "id": "D7",
+  "V7": {
+    "id": "V7",
     "name": "Speak When I Name - blueshirt",
     "posted_at": "2026-06-06T23:19:57.926734+00:00",
     "snapshots": [

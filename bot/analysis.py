@@ -31,8 +31,8 @@ METRIC_LABELS = {
 
 def next_video_id(cache: dict) -> str:
     """Return the next sequential video ID (D7, D8, ...)."""
-    nums = [int(k[1:]) for k in cache if k.startswith("D") and k[1:].isdigit()]
-    return f"D{max(nums) + 1}" if nums else "D1"
+    nums = [int(k[1:]) for k in cache if k.startswith("V") and k[1:].isdigit()]
+    return f"V{max(nums) + 1}" if nums else "V1"
 
 
 def build_snapshot(metrics: dict, captured_at: str, posted_at: Optional[str]) -> dict:
