@@ -1,287 +1,986 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Instagram Reels Dashboard — Agency Series</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
-    <style>
-    :root { color-scheme: light; }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f0f2f5; color: #1a1a1a; padding: 24px; font-size: 14px;
-    }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .header-left h1 { font-size: 22px; font-weight: 800; }
-    .header-left p { color: #666; font-size: 13px; margin-top: 4px; }
-    .cards { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 20px; }
-    .card { background:#fff; border-radius:14px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
-    .card-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#999; margin-bottom:8px; }
-    .card-value { font-size:28px; font-weight:800; line-height:1; }
-    .card-sub { font-size:11px; color:#999; margin-top:5px; }
-    .c-neutral{color:#1a1a1a} .c-warn{color:#f59e0b} .c-crit{color:#ef4444} .c-good{color:#22c55e}
-    .charts-row { display:grid; grid-template-columns:1.1fr 1fr .9fr; gap:12px; margin-bottom:20px; }
-    .panel { background:#fff; border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
-    .panel-title { font-size:13px; font-weight:700; margin-bottom:14px; }
-    .table-wrap { background:#fff; border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.07); margin-bottom:20px; overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; font-size:12.5px; }
-    thead th { text-align:left; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#999; padding:7px 10px; border-bottom:2px solid #f0f0f0; white-space:nowrap; }
-    tbody td { padding:11px 10px; border-bottom:1px solid #f5f5f5; white-space:nowrap; }
-    tbody tr:last-child td { border-bottom:none; font-weight:700; background:#fafafa; }
-    tbody tr:not(:last-child):hover { background:#fafafa; }
-    .day-badge { display:inline-block; background:#1a1a1a; color:#fff; border-radius:7px; padding:3px 9px; font-size:12px; font-weight:800; min-width:36px; text-align:center; }
-    .avg-badge { display:inline-block; background:#666; color:#fff; border-radius:7px; padding:3px 9px; font-size:12px; font-weight:700; }
-    .pill { display:inline-block; border-radius:5px; padding:2px 7px; font-size:11.5px; font-weight:700; }
-    .pill-red{background:#fef2f2;color:#ef4444} .pill-yellow{background:#fffbeb;color:#d97706}
-    .pill-green{background:#f0fdf4;color:#16a34a} .pill-neutral{background:#f5f5f5;color:#555}
-    .watch-bar { display:flex; align-items:center; gap:7px; }
-    .watch-track { height:6px; border-radius:3px; background:#f0f0f0; flex:1; min-width:50px; }
-    .watch-fill { height:6px; border-radius:3px; }
-    .timeline { display:flex; gap:8px; margin-bottom:20px; overflow-x:auto; padding-bottom:4px; }
-    .tl-item { background:#fff; border-radius:10px; padding:11px 14px; box-shadow:0 1px 3px rgba(0,0,0,.07); min-width:130px; flex-shrink:0; }
-    .tl-day { font-weight:800; font-size:14px; margin-bottom:5px; }
-    .tl-story { color:#777; font-size:11px; line-height:1.4; }
-    .health-panel { background:#fff; border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.07); margin-bottom:20px; }
-    .health-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #f0f0f0; }
-    .health-item:last-child { border-bottom:none; }
-    .health-dot { width:9px; height:9px; border-radius:50%; background:#ef4444; flex-shrink:0; margin-top:5px; }
-    .health-text strong { display:block; font-size:13px; color:#ef4444; margin-bottom:4px; }
-    .health-text span { font-size:12px; color:#777; line-height:1.55; }
-    .footer-note { font-size:11px; color:#bbb; text-align:center; margin-top:16px; }
-    .generated-note { font-size:11px; color:#bbb; text-align:right; margin-bottom:8px; }
-    </style>
-    </head>
-    <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reels Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #1a1a1a;
+  --surface2: #242424;
+  --accent: #E1306C;
+  --accent2: #833AB4;
+  --text: #f0f0f0;
+  --text-muted: #888;
+  --green: #4ade80;
+  --yellow: #facc15;
+  --red: #f87171;
+  --radius: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  min-height: 100vh;
+}
 
-    <div class="header">
-      <div class="header-left">
-        <h1>Instagram Reels — Agency Series</h1>
-        <p>Building a Brand Marketing Agency · Goal: Maximum Views</p>
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 56px;
+}
+.header-title {
+  font-size: 18px;
+  font-weight: 800;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Content ── */
+.content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Cards ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (max-width: 700px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  border: 1px solid #2a2a2a;
+}
+.card-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.card-value {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+}
+.card-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.c-green { color: var(--green); }
+.c-yellow { color: var(--yellow); }
+.c-red { color: var(--red); }
+.c-default { color: var(--text); }
+
+/* ── Chart boxes ── */
+.charts-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 800px) { .charts-2col { grid-template-columns: 1fr; } }
+
+.chart-box {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  border: 1px solid #2a2a2a;
+  margin-bottom: 16px;
+}
+.chart-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.chart-box-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.chart-wrap { position: relative; }
+
+/* ── Section headings ── */
+.section-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* ── Multiplier table ── */
+.multiplier-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 16px;
+}
+.multiplier-table thead tr {
+  background: linear-gradient(90deg, rgba(225,48,108,0.15), rgba(131,58,180,0.15));
+}
+.multiplier-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.multiplier-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #222;
+  color: var(--text);
+}
+.multiplier-table tbody tr:hover { background: var(--surface2); }
+.multiplier-table tbody tr:last-child td { border-bottom: none; }
+
+/* ── Video Detail ── */
+.detail-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.detail-select-row label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+#video-select {
+  background: var(--surface2);
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  padding: 8px 12px;
+  cursor: pointer;
+  outline: none;
+}
+#video-select:focus { border-color: var(--accent); }
+
+.detail-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) { .detail-cards { grid-template-columns: repeat(2, 1fr); } }
+.detail-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  border: 1px solid #2a2a2a;
+}
+.detail-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.detail-card-value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.detail-card-cmp {
+  font-size: 11px;
+  font-weight: 600;
+}
+.cmp-above { color: var(--green); }
+.cmp-below { color: var(--red); }
+.cmp-below-good { color: var(--green); }
+.cmp-above-bad { color: var(--red); }
+.no-ts-data {
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* ── Metrics table ── */
+.metrics-table-wrap {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  border: 1px solid #2a2a2a;
+  margin-top: 16px;
+  overflow-x: auto;
+}
+.metrics-table-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.metrics-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #222;
+}
+.metrics-table tr:last-child td { border-bottom: none; }
+.metrics-table td:first-child {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  width: 40%;
+}
+.metrics-table td:last-child {
+  font-weight: 700;
+  color: var(--text);
+}
+.metrics-table tr:hover { background: var(--surface2); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <span class="header-title">Reels Analytics</span>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="trends">Trends</button>
+    <button class="tab-btn" data-tab="growth">Growth</button>
+    <button class="tab-btn" data-tab="detail">Video Detail</button>
+  </nav>
+</header>
+
+<main class="content">
+
+  <!-- Tab 1: Overview -->
+  <section class="tab-panel active" id="tab-overview">
+    <div class="cards-grid" id="overview-cards"></div>
+    <div class="charts-2col">
+      <div class="chart-box">
+        <div class="chart-box-title">Current Views</div>
+        <div class="chart-wrap"><canvas id="chart-views"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">Skip Rate (%)</div>
+        <div class="chart-wrap"><canvas id="chart-skip"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">3s Retention (%)</div>
+        <div class="chart-wrap"><canvas id="chart-ret3s"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">Like Rate (%)</div>
+        <div class="chart-wrap"><canvas id="chart-like"></canvas></div>
       </div>
     </div>
+  </section>
 
-<div class="timeline" id="timeline"></div>
-    <div class="cards" id="summary-cards"></div>
+  <!-- Tab 2: Trends -->
+  <section class="tab-panel" id="tab-trends">
+    <div class="section-title">Performance Over Time</div>
+    <div class="section-subtitle">Tracking key metrics across videos in chronological order (V1 = oldest)</div>
 
-    <div class="charts-row">
-      <div class="panel"><div class="panel-title">Views by Day</div><canvas id="viewsChart" height="200"></canvas></div>
-      <div class="panel"><div class="panel-title">Skip Rate vs Retention @3s</div><canvas id="signalsChart" height="200"></canvas></div>
-      <div class="panel"><div class="panel-title">Avg Watch %</div><canvas id="watchChart" height="200"></canvas></div>
+    <div class="chart-box">
+      <div class="chart-box-title">Skip Rate Over Time</div>
+      <div class="chart-box-subtitle">Lower is better — viewers watching past the first moments</div>
+      <div class="chart-wrap"><canvas id="chart-trend-skip"></canvas></div>
     </div>
 
-    <div class="panel" style="margin-bottom:20px" id="time-series-panel">
-      <div class="panel-title">Views Over Time — all videos</div>
-      <canvas id="timeSeriesChart" height="120"></canvas>
+    <div class="chart-box">
+      <div class="chart-box-title">Watch Time (seconds)</div>
+      <div class="chart-box-subtitle">Average seconds watched per view</div>
+      <div class="chart-wrap"><canvas id="chart-trend-watch"></canvas></div>
     </div>
 
-    <div class="table-wrap">
-      <div class="panel-title" style="margin-bottom:14px">Per-Reel Breakdown</div>
-      <table>
-        <thead><tr>
-          <th>Day</th><th>Views</th><th>Accts Reached</th><th>Length</th>
-          <th>Avg Watch</th><th>Watch %</th><th>Skip Rate</th><th>Ret. @3s</th>
-          <th>Like Rate</th><th>Follow Rate</th><th>Profile Visits</th><th>Top Source</th>
-        </tr></thead>
-        <tbody id="table-body"></tbody>
-      </table>
+    <div class="chart-box">
+      <div class="chart-box-title">3s Retention (%)</div>
+      <div class="chart-box-subtitle">Percentage of viewers who watched at least 3 seconds</div>
+      <div class="chart-wrap"><canvas id="chart-trend-ret3s"></canvas></div>
+    </div>
+  </section>
+
+  <!-- Tab 3: Growth -->
+  <section class="tab-panel" id="tab-growth">
+    <div class="section-title">View Growth</div>
+    <div class="section-subtitle">Day-1 → Day-3 → Current views per video</div>
+
+    <div class="chart-box">
+      <div class="chart-wrap"><canvas id="chart-growth"></canvas></div>
     </div>
 
-    <div class="health-panel" id="series-health">
-      <div class="panel-title">🚨 Series Health</div>
+    <div class="chart-box">
+      <div class="chart-box-title">Growth Multiplier</div>
+      <div class="chart-box-subtitle">Current views divided by Day-1 views</div>
+      <div id="multiplier-table-wrap"></div>
     </div>
+  </section>
 
-    <p class="footer-note">Thresholds · Skip Rate warn &gt;40% / crit &gt;55% · Ret @3s warn &lt;60% / crit &lt;45% · Follow Rate warn &lt;0.20% / crit &lt;0.10% · Watch % warn &lt;40% / crit &lt;25%</p>
+  <!-- Tab 4: Video Detail -->
+  <section class="tab-panel" id="tab-detail">
+    <div class="detail-select-row">
+      <label for="video-select">Select video:</label>
+      <select id="video-select"></select>
+    </div>
+    <div class="detail-cards" id="detail-cards"></div>
+    <div class="chart-box" id="detail-chart-box">
+      <div class="chart-box-title">Views Over Time</div>
+      <div class="chart-box-subtitle">Views at each hourly snapshot</div>
+      <div class="chart-wrap" id="detail-chart-wrap"></div>
+    </div>
+    <div class="metrics-table-wrap">
+      <div class="metrics-table-title">Latest Snapshot — All Metrics</div>
+      <table class="metrics-table" id="detail-metrics-table"><tbody></tbody></table>
+    </div>
+  </section>
 
-    <script>
+</main>
+
+<script>
+// ── Chart.js global defaults ──────────────────────────────────────────────────
+Chart.defaults.color = '#888';
+Chart.defaults.borderColor = '#2a2a2a';
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
+Chart.defaults.font.size = 12;
+
+// ── Chart instance registry (destroy before recreate) ────────────────────────
+const charts = {};
+
+function destroyChart(key) {
+  if (charts[key]) { charts[key].destroy(); delete charts[key]; }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function skipColor(v) {
+  if (v == null) return '#444';
+  if (v < 45) return '#4ade80';
+  if (v < 55) return '#facc15';
+  return '#f87171';
+}
+
+function avg(rows, field) {
+  const vals = rows.map(r => r[field]).filter(v => v != null);
+  if (vals.length === 0) return null;
+  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10;
+}
+
+function fmt(v, decimals) {
+  if (v == null) return '—';
+  if (typeof v === 'string') return v;
+  if (decimals != null) return Number(v).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return Number(v).toLocaleString();
+}
+
+// Closest-by-value helper — finds snapshot with hours_since_post nearest to target
+function closestHourSnap(snapshots, targetHour) {
+  const timed = snapshots.filter(s => s.hours_since_post != null && s.views_at_hour != null);
+  if (timed.length === 0) return null;
+  return timed.reduce((best, s) =>
+    Math.abs(s.hours_since_post - targetHour) < Math.abs(best.hours_since_post - targetHour) ? s : best
+  );
+}
+
+// ── Data normalisation ───────────────────────────────────────────────────────
 function normalizeCacheToFlat(cache) {
-  return Object.values(cache).map(v => {
-    const latest = v.snapshots && v.snapshots.length
-      ? v.snapshots[v.snapshots.length - 1]
-      : {};
-    return { day: v.id, story: v.name, ...latest };
+  return Object.values(cache).map(video => {
+    const snaps = video.snapshots || [];
+
+    // Latest snapshot with non-null views
+    let latest = null;
+    for (let i = snaps.length - 1; i >= 0; i--) {
+      if (snaps[i].views != null) { latest = snaps[i]; break; }
+    }
+    // If no snap has views, use the last snap
+    if (!latest && snaps.length > 0) latest = snaps[snaps.length - 1];
+
+    const d1Snap = closestHourSnap(snaps, 24);
+    const d3Snap = closestHourSnap(snaps, 72);
+    const day1Views = d1Snap ? d1Snap.views_at_hour : null;
+    const day3Views = d3Snap ? d3Snap.views_at_hour : null;
+
+    const views    = latest ? latest.views    : null;
+    const reached  = latest ? latest.reached  : null;
+    const watchTime = latest ? latest.watchTime : null;
+    const skipRate = latest ? latest.skipRate : null;
+    const likeRate = latest ? latest.likeRate : null;
+    const ret3s    = latest ? latest.ret3s    : null;
+    const retEnd   = latest ? latest.retEnd   : null;
+    const follows  = latest ? latest.follows  : null;
+
+    const multiplier = (views != null && day1Views != null && day1Views > 0)
+      ? parseFloat((views / day1Views).toFixed(1))
+      : null;
+
+    const follows_per_1k = (follows != null && views != null && views > 0)
+      ? parseFloat((follows / views * 1000).toFixed(2))
+      : null;
+
+    return {
+      id: video.id,
+      name: video.name,
+      views, reached, watchTime, skipRate, likeRate, ret3s, retEnd, follows,
+      day1Views, day3Views, multiplier, follows_per_1k,
+      snapshots: snaps,
+      latest,
+    };
   });
 }
 
-function renderDashboard(cache) {
-  const DAYS = normalizeCacheToFlat(cache);
+// ── Tab switching ────────────────────────────────────────────────────────────
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabPanels = document.querySelectorAll('.tab-panel');
 
-  // ── Derived ──────────────────────────────────────────────────────────
-  const watchPct = d => d.reelLength ? Math.round(d.watchTime / d.reelLength * 100) : null;
-  const followRate = d => d.views ? (d.follows / d.views * 100) : 0;
-  const avg = (arr, fn) => { const v = arr.map(fn).filter(x => x !== null && !isNaN(x)); return v.reduce((a,b)=>a+b,0)/v.length; };
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabPanels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
 
-  // ── Flag helpers ──────────────────────────────────────────────────────
-  const skipCls  = v => v > 55 ? 'pill-red' : v > 40 ? 'pill-yellow' : 'pill-green';
-  const skipIco  = v => v > 55 ? '🔴' : v > 40 ? '⚠️' : '✓';
-  const ret3Cls  = v => v < 45 ? 'pill-red' : v < 60 ? 'pill-yellow' : 'pill-green';
-  const ret3Ico  = v => v < 45 ? '🔴' : v < 60 ? '⚠️' : '✓';
-  const frCls    = v => v < 0.10 ? 'pill-red' : v < 0.20 ? 'pill-yellow' : 'pill-green';
-  const frIco    = v => v < 0.10 ? '🔴' : v < 0.20 ? '⚠️' : '✓';
-  const wpCls    = v => v === null ? 'pill-neutral' : v < 25 ? 'pill-red' : v < 40 ? 'pill-yellow' : 'pill-green';
-  const wpIco    = v => v === null ? '—' : v < 25 ? '🔴' : v < 40 ? '⚠️' : '✓';
-  const wpColor  = v => v < 25 ? '#ef4444' : v < 40 ? '#f59e0b' : v < 60 ? '#3b82f6' : '#22c55e';
+// ── Render ───────────────────────────────────────────────────────────────────
+function renderDashboard(rows) {
+  renderOverview(rows);
+  renderTrends(rows);
+  renderGrowth(rows);
+  renderDetailInit(rows);
+}
 
-  // ── Timeline ──────────────────────────────────────────────────────────
-  document.getElementById('timeline').innerHTML = DAYS.map(d => `
-    <div class="tl-item"><div class="tl-day">${d.day}</div><div class="tl-story">${d.story}</div></div>
-  `).join('');
+// ── Tab 1: Overview ──────────────────────────────────────────────────────────
+function renderOverview(rows) {
+  const avgSkip = avg(rows, 'skipRate');
+  const avgD1   = avg(rows, 'day1Views');
+  const avgRet3 = avg(rows, 'ret3s');
 
-  // ── Cards ─────────────────────────────────────────────────────────────
-  const aViews = avg(DAYS, d => d.views);
-  const aSkip  = avg(DAYS, d => d.skipRate);
-  const aRet   = avg(DAYS, d => d.ret3s);
-  const aFR    = avg(DAYS, d => followRate(d));
-  const aWP    = avg(DAYS, d => watchPct(d));
-  const peak   = DAYS.reduce((a,b) => b.views > a.views ? b : a, DAYS[0]);
-  const skipC  = aSkip > 55 ? 'c-crit' : aSkip > 40 ? 'c-warn' : 'c-good';
-  const retC   = aRet  < 45 ? 'c-crit' : aRet  < 60 ? 'c-warn' : 'c-good';
-  const frC    = aFR   < 0.10 ? 'c-crit' : aFR < 0.20 ? 'c-warn' : 'c-good';
-  const wpC    = aWP   < 25 ? 'c-crit' : aWP  < 40 ? 'c-warn' : 'c-good';
-  document.getElementById('summary-cards').innerHTML = `
-    <div class="card"><div class="card-label">Avg Views</div><div class="card-value c-neutral">${Math.round(aViews).toLocaleString()}</div><div class="card-sub">Peak: ${peak.views.toLocaleString()} (${peak.day})</div></div>
-    <div class="card"><div class="card-label">Avg Skip Rate</div><div class="card-value ${skipC}">${aSkip.toFixed(1)}%</div><div class="card-sub">Warn &gt;40% · Crit &gt;55%</div></div>
-    <div class="card"><div class="card-label">Avg Ret. @3s</div><div class="card-value ${retC}">${aRet.toFixed(1)}%</div><div class="card-sub">Warn &lt;60% · Crit &lt;45%</div></div>
-    <div class="card"><div class="card-label">Avg Watch %</div><div class="card-value ${wpC}">${aWP !== null ? aWP.toFixed(1)+'%' : '—'}</div><div class="card-sub">Watch time ÷ reel length</div></div>
-    <div class="card"><div class="card-label">Avg Follow Rate</div><div class="card-value ${frC}">${aFR.toFixed(3)}%</div><div class="card-sub">Warn &lt;0.20% · Crit &lt;0.10%</div></div>
+  // Determine skip colour class
+  let skipClass = 'c-default';
+  if (avgSkip != null) {
+    if (avgSkip < 45) skipClass = 'c-green';
+    else if (avgSkip < 55) skipClass = 'c-yellow';
+    else skipClass = 'c-red';
+  }
+
+  const cardsEl = document.getElementById('overview-cards');
+  cardsEl.innerHTML = `
+    <div class="card">
+      <div class="card-label">Videos</div>
+      <div class="card-value c-default">${rows.length}</div>
+      <div class="card-sub">total tracked</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Skip Rate</div>
+      <div class="card-value ${skipClass}">${avgSkip != null ? avgSkip + '%' : '—'}</div>
+      <div class="card-sub">lower is better</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Day-1 Views</div>
+      <div class="card-value c-default">${avgD1 != null ? Number(avgD1).toLocaleString() : '—'}</div>
+      <div class="card-sub">views at 24h</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg 3s Retention</div>
+      <div class="card-value c-default">${avgRet3 != null ? avgRet3 + '%' : '—'}</div>
+      <div class="card-sub">watched 3+ seconds</div>
+    </div>
   `;
 
-  // ── Table ─────────────────────────────────────────────────────────────
-  const rows = DAYS.map(d => {
-    const wp = watchPct(d), fr = followRate(d);
-    const wf = wp !== null ? Math.min(wp,100) : 0;
-    return `<tr>
-      <td><span class="day-badge">${d.day}</span></td>
-      <td>${(d.views||0).toLocaleString()}</td>
-      <td>${(d.reached||0).toLocaleString()}</td>
-      <td>${d.reelLength}s</td>
-      <td>${d.watchTime}s</td>
-      <td><div class="watch-bar"><span class="pill ${wpCls(wp)}">${wp !== null ? wp+'%' : '—'} ${wpIco(wp)}</span><div class="watch-track"><div class="watch-fill" style="width:${wf}%;background:${wpColor(wp||0)}"></div></div></div></td>
-      <td><span class="pill ${skipCls(d.skipRate)}">${d.skipRate}% ${skipIco(d.skipRate)}</span></td>
-      <td><span class="pill ${ret3Cls(d.ret3s)}">${d.ret3s}% ${ret3Ico(d.ret3s)}</span></td>
-      <td>${d.likeRate}%</td>
-      <td><span class="pill ${frCls(fr)}">${fr.toFixed(3)}% ${frIco(fr)}</span></td>
-      <td>${(d.profileVisits||0).toLocaleString()}</td>
-      <td style="font-size:11.5px;color:#666">${d.topSource}</td>
-    </tr>`;
-  });
-  const avgLen = avg(DAYS,d=>d.reelLength), avgWT=avg(DAYS,d=>d.watchTime);
-  rows.push(`<tr>
-    <td><span class="avg-badge">AVG</span></td>
-    <td>${Math.round(aViews).toLocaleString()}</td>
-    <td>${Math.round(avg(DAYS,d=>d.reached)).toLocaleString()}</td>
-    <td>${avgLen.toFixed(1)}s</td><td>${avgWT.toFixed(1)}s</td>
-    <td><span class="pill ${wpCls(aWP)}">${isNaN(aWP) ? '—' : aWP.toFixed(1)+'%'}</span></td>
-    <td><span class="pill ${skipCls(aSkip)}">${aSkip.toFixed(1)}%</span></td>
-    <td><span class="pill ${ret3Cls(aRet)}">${aRet.toFixed(1)}%</span></td>
-    <td>${avg(DAYS,d=>d.likeRate).toFixed(1)}%</td>
-    <td><span class="pill ${frCls(aFR)}">${aFR.toFixed(3)}%</span></td>
-    <td>${Math.round(avg(DAYS,d=>d.profileVisits)).toLocaleString()}</td>
-    <td style="font-size:11.5px;color:#666">—</td>
-  </tr>`);
-  document.getElementById('table-body').innerHTML = rows.join('');
+  const labels = rows.map(r => r.name);
 
-  // ── Charts ────────────────────────────────────────────────────────────
-  const labels = DAYS.map(d => d.day);
-  const barColors = DAYS.map(d => d.skipRate > 55 ? '#ef4444' : d.skipRate > 40 ? '#f59e0b' : '#22c55e');
-
-  new Chart(document.getElementById('viewsChart'), {
-    type:'bar', data:{ labels, datasets:[{ data:DAYS.map(d=>d.views), backgroundColor:barColors, borderRadius:7, borderSkipped:false }] },
-    options:{ responsive:true, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.parsed.y.toLocaleString()+' views'}} },
-      scales:{ y:{beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{color:'#999',font:{size:11},callback:v=>v>=1000?(v/1000)+'k':v}}, x:{grid:{display:false},ticks:{color:'#1a1a1a',font:{size:12,weight:'700'}}} } }
+  // Chart 1: Current Views
+  destroyChart('views');
+  charts['views'] = new Chart(document.getElementById('chart-views'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Current Views',
+        data: rows.map(r => r.views ?? 0),
+        backgroundColor: 'rgba(225,48,108,0.75)',
+        borderColor: '#E1306C',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = rows[ctx.dataIndex].views;
+              return v == null ? '—' : ' ' + Number(v).toLocaleString() + ' views';
+            }
+          }
+        }
+      },
+      scales: { x: { beginAtZero: true }, y: { ticks: { font: { size: 11 } } } }
+    }
   });
 
-  new Chart(document.getElementById('signalsChart'), {
-    type:'line',
-    data:{ labels, datasets:[
-      { label:'Skip Rate %', data:DAYS.map(d=>d.skipRate), borderColor:'#ef4444', tension:.3, pointRadius:5, pointBackgroundColor:'#ef4444', fill:false },
-      { label:'Retention @3s %', data:DAYS.map(d=>d.ret3s), borderColor:'#3b82f6', tension:.3, pointRadius:5, pointBackgroundColor:'#3b82f6', fill:false },
-      { label:'Warn (Skip 40%)', data:DAYS.map(()=>40), borderColor:'#f59e0b', borderDash:[4,4], borderWidth:1.5, pointRadius:0, fill:false },
-      { label:'Crit (Ret 45%)', data:DAYS.map(()=>45), borderColor:'#ef4444', borderDash:[4,4], borderWidth:1.5, pointRadius:0, fill:false }
-    ]},
-    options:{ responsive:true, plugins:{ legend:{position:'bottom',labels:{font:{size:10},color:'#999',boxWidth:10,padding:8}}, tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y+'%'}} },
-      scales:{ y:{min:30,max:75,grid:{color:'#f0f0f0'},ticks:{color:'#999',font:{size:11},callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{color:'#1a1a1a',font:{size:12,weight:'700'}}} } }
+  // Chart 2: Skip Rate
+  destroyChart('skip');
+  charts['skip'] = new Chart(document.getElementById('chart-skip'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Skip Rate',
+        data: rows.map(r => r.skipRate ?? 0),
+        backgroundColor: rows.map(r => skipColor(r.skipRate)),
+        borderWidth: 0,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = rows[ctx.dataIndex].skipRate;
+              return v == null ? '—' : ' ' + v + '%';
+            }
+          }
+        }
+      },
+      scales: { x: { beginAtZero: true, max: 100 }, y: { ticks: { font: { size: 11 } } } }
+    }
   });
 
-  const wpData = DAYS.map(d=>watchPct(d));
-  new Chart(document.getElementById('watchChart'), {
-    type:'bar', data:{ labels, datasets:[{ data:wpData, backgroundColor:wpData.map(v=>wpColor(v||0)), borderRadius:7, borderSkipped:false }] },
-    options:{ responsive:true, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.parsed.y+'% watched'}} },
-      scales:{ y:{beginAtZero:true,max:100,grid:{color:'#f0f0f0'},ticks:{color:'#999',font:{size:11},callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{color:'#1a1a1a',font:{size:12,weight:'700'}}} } }
+  // Chart 3: 3s Retention
+  destroyChart('ret3s');
+  charts['ret3s'] = new Chart(document.getElementById('chart-ret3s'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '3s Retention',
+        data: rows.map(r => r.ret3s ?? 0),
+        backgroundColor: 'rgba(131,58,180,0.75)',
+        borderColor: '#833AB4',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = rows[ctx.dataIndex].ret3s;
+              return v == null ? '—' : ' ' + v + '%';
+            }
+          }
+        }
+      },
+      scales: { x: { beginAtZero: true, max: 100 }, y: { ticks: { font: { size: 11 } } } }
+    }
   });
 
-  // ── Time-Series Panel ─────────────────────────────────────────────────
-  const timeSeriesSnapshots = [];
-  Object.values(cache).forEach(v => {
-    (v.snapshots || []).forEach(s => {
-      if (s.hours_since_post !== null && s.views_at_hour !== null) {
-        timeSeriesSnapshots.push({ vid: v.id, hours: s.hours_since_post, views: s.views_at_hour });
+  // Chart 4: Like Rate
+  destroyChart('like');
+  charts['like'] = new Chart(document.getElementById('chart-like'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Like Rate',
+        data: rows.map(r => r.likeRate ?? 0),
+        backgroundColor: 'rgba(74,222,128,0.75)',
+        borderColor: '#4ade80',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = rows[ctx.dataIndex].likeRate;
+              return v == null ? '—' : ' ' + v + '%';
+            }
+          }
+        }
+      },
+      scales: { x: { beginAtZero: true }, y: { ticks: { font: { size: 11 } } } }
+    }
+  });
+}
+
+// ── Tab 2: Trends ────────────────────────────────────────────────────────────
+function makeTrendChart(canvasId, chartKey, rows, field) {
+  const labels = rows.map(r => r.name);
+  const data   = rows.map(r => r[field] != null ? r[field] : null);
+  const avgVal = avg(rows, field);
+
+  destroyChart(chartKey);
+  charts[chartKey] = new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Value',
+          data,
+          borderColor: '#E1306C',
+          backgroundColor: 'rgba(225,48,108,0.1)',
+          tension: 0.3,
+          spanGaps: false,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+        },
+        {
+          label: 'Average',
+          data: rows.map(() => avgVal),
+          borderColor: '#555',
+          borderDash: [6, 3],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true, labels: { boxWidth: 14, padding: 16 } }
+      },
+      scales: {
+        y: { beginAtZero: false }
       }
-    });
+    }
+  });
+}
+
+function renderTrends(rows) {
+  makeTrendChart('chart-trend-skip',  'trend-skip',  rows, 'skipRate');
+  makeTrendChart('chart-trend-watch', 'trend-watch', rows, 'watchTime');
+  makeTrendChart('chart-trend-ret3s', 'trend-ret3s', rows, 'ret3s');
+}
+
+// ── Tab 3: Growth ────────────────────────────────────────────────────────────
+function renderGrowth(rows) {
+  const labels = rows.map(r => r.name);
+
+  destroyChart('growth');
+  charts['growth'] = new Chart(document.getElementById('chart-growth'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Day 1',
+          data: rows.map(r => r.day1Views),
+          backgroundColor: 'rgba(225,48,108,0.7)',
+          borderRadius: 4,
+        },
+        {
+          label: 'Day 3',
+          data: rows.map(r => r.day3Views),
+          backgroundColor: 'rgba(131,58,180,0.7)',
+          borderRadius: 4,
+        },
+        {
+          label: 'Current',
+          data: rows.map(r => r.views),
+          backgroundColor: 'rgba(240,240,240,0.85)',
+          borderRadius: 4,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = ctx.raw;
+              return ctx.dataset.label + ': ' + (v == null ? '—' : Number(v).toLocaleString());
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 11 } } },
+        y: { beginAtZero: true }
+      }
+    }
   });
 
-  if (timeSeriesSnapshots.length > 0) {
-    const colors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#06b6d4'];
-    const byVideo = {};
-    timeSeriesSnapshots.forEach(s => {
-      if (!byVideo[s.vid]) byVideo[s.vid] = [];
-      byVideo[s.vid].push({ x: s.hours, y: s.views });
-    });
-    const datasets = Object.entries(byVideo).map(([vid, pts], i) => ({
-      label: vid,
-      data: pts.sort((a,b) => a.x - b.x),
-      borderColor: colors[i % colors.length],
-      tension: 0.3, pointRadius: 5, fill: false,
-    }));
-    new Chart(document.getElementById('timeSeriesChart'), {
+  // Multiplier table
+  const sorted = [...rows].sort((a, b) => {
+    if (a.multiplier == null && b.multiplier == null) return 0;
+    if (a.multiplier == null) return 1;
+    if (b.multiplier == null) return -1;
+    return b.multiplier - a.multiplier;
+  });
+
+  function multStatus(m) {
+    if (m == null) return '—';
+    if (m >= 2) return '🚀';
+    if (m >= 1.5) return '✅';
+    return '➖';
+  }
+
+  const tbody = sorted.map(r => `
+    <tr>
+      <td>${r.name}</td>
+      <td>${r.day1Views != null ? Number(r.day1Views).toLocaleString() : '—'}</td>
+      <td>${r.views != null ? Number(r.views).toLocaleString() : '—'}</td>
+      <td style="font-weight:800;color:${r.multiplier != null ? (r.multiplier >= 2 ? 'var(--green)' : r.multiplier >= 1.5 ? 'var(--yellow)' : 'var(--text-muted)') : 'var(--text-muted)'}">
+        ${r.multiplier != null ? r.multiplier + 'x' : '—'}
+      </td>
+      <td>${multStatus(r.multiplier)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('multiplier-table-wrap').innerHTML = `
+    <table class="multiplier-table">
+      <thead>
+        <tr>
+          <th>Video</th>
+          <th>Day-1 Views</th>
+          <th>Current Views</th>
+          <th>Multiplier</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>${tbody}</tbody>
+    </table>
+  `;
+}
+
+// ── Tab 4: Video Detail ──────────────────────────────────────────────────────
+const FIELD_LABELS = {
+  views: 'Total Views',
+  reached: 'Accounts Reached',
+  watchTime: 'Avg Watch Time (s)',
+  skipRate: 'Skip Rate (%)',
+  likeRate: 'Like Rate (%)',
+  shareRate: 'Share Rate (%)',
+  saveRate: 'Save Rate (%)',
+  repostRate: 'Repost Rate (%)',
+  commentRate: 'Comment Rate (%)',
+  ret3s: '3s Retention (%)',
+  retEnd: 'End Retention (%)',
+  follows: 'Follows',
+  likes: 'Likes',
+  comments: 'Comments',
+  reposts: 'Reposts',
+  shares: 'Shares',
+  saves: 'Saves',
+  profileVisits: 'Profile Visits',
+  nonFollower: 'Non-Follower %',
+  topSource: 'Top Source',
+  ageBracket: 'Top Age Bracket',
+  hours_since_post: 'Hours Since Post',
+  views_at_hour: 'Views at This Hour',
+};
+
+function renderDetailInit(rows) {
+  const select = document.getElementById('video-select');
+  select.innerHTML = rows.map((r, i) =>
+    `<option value="${i}">${r.name}</option>`
+  ).join('');
+  // Default to last video
+  select.value = String(rows.length - 1);
+
+  select.addEventListener('change', () => {
+    const idx = parseInt(select.value, 10);
+    showVideoDetail(rows, rows[idx]);
+  });
+
+  showVideoDetail(rows, rows[rows.length - 1]);
+}
+
+function showVideoDetail(rows, video) {
+  const avgs = {
+    views:    avg(rows, 'views'),
+    reached:  avg(rows, 'reached'),
+    watchTime: avg(rows, 'watchTime'),
+    skipRate: avg(rows, 'skipRate'),
+    likeRate: avg(rows, 'likeRate'),
+    ret3s:    avg(rows, 'ret3s'),
+  };
+
+  const metricDefs = [
+    { key: 'views',     label: 'Views',      lowerBetter: false },
+    { key: 'reached',   label: 'Reached',    lowerBetter: false },
+    { key: 'watchTime', label: 'Watch Time', lowerBetter: false },
+    { key: 'skipRate',  label: 'Skip Rate',  lowerBetter: true  },
+    { key: 'likeRate',  label: 'Like Rate',  lowerBetter: false },
+    { key: 'ret3s',     label: '3s Retention', lowerBetter: false },
+  ];
+
+  const cardsHtml = metricDefs.map(def => {
+    const val  = video[def.key];
+    const avgV = avgs[def.key];
+    let cmpHtml = '';
+    if (val != null && avgV != null) {
+      const above = val > avgV;
+      if (def.lowerBetter) {
+        // lower is better → above avg = bad, below avg = good
+        const cls = above ? 'cmp-above-bad' : 'cmp-below-good';
+        const arrow = above ? '↑' : '↓';
+        const word  = above ? 'above avg' : 'below avg';
+        cmpHtml = `<div class="detail-card-cmp ${cls}">${arrow} ${word} (avg ${avgV})</div>`;
+      } else {
+        const cls = above ? 'cmp-above' : 'cmp-below';
+        const arrow = above ? '↑' : '↓';
+        const word  = above ? 'above avg' : 'below avg';
+        cmpHtml = `<div class="detail-card-cmp ${cls}">${arrow} ${word} (avg ${avgV})</div>`;
+      }
+    }
+    const dispVal = val != null
+      ? (def.key === 'skipRate' || def.key === 'likeRate' || def.key === 'ret3s'
+          ? val + '%'
+          : (def.key === 'watchTime' ? val + 's' : Number(val).toLocaleString()))
+      : '—';
+
+    return `
+      <div class="detail-card">
+        <div class="detail-card-label">${def.label}</div>
+        <div class="detail-card-value">${dispVal}</div>
+        ${cmpHtml}
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('detail-cards').innerHTML = cardsHtml;
+
+  // Views over time chart
+  const timedSnaps = (video.snapshots || [])
+    .filter(s => s.hours_since_post != null && s.views_at_hour != null)
+    .sort((a, b) => a.hours_since_post - b.hours_since_post);
+
+  const chartWrap = document.getElementById('detail-chart-wrap');
+
+  destroyChart('detail-ts');
+
+  if (timedSnaps.length === 0) {
+    chartWrap.innerHTML = '<div class="no-ts-data">No time-series data available for this video.</div>';
+  } else {
+    // Ensure canvas exists
+    chartWrap.innerHTML = '<canvas id="chart-detail-ts"></canvas>';
+    charts['detail-ts'] = new Chart(document.getElementById('chart-detail-ts'), {
       type: 'line',
-      data: { datasets },
+      data: {
+        labels: timedSnaps.map(s => 'Hour ' + s.hours_since_post),
+        datasets: [{
+          label: 'Views at Hour',
+          data: timedSnaps.map(s => s.views_at_hour),
+          borderColor: '#E1306C',
+          backgroundColor: 'rgba(225,48,108,0.15)',
+          tension: 0.3,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          fill: true,
+        }]
+      },
       options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom' } },
+        plugins: { legend: { display: false } },
         scales: {
-          x: { type: 'linear', title: { display: true, text: 'Hours since post' } },
-          y: { beginAtZero: true, title: { display: true, text: 'Views' } }
+          y: { beginAtZero: false },
+          x: { ticks: { font: { size: 11 } } }
         }
       }
     });
   }
 
-  // ── Series Health ─────────────────────────────────────────────────────
-  const items = [];
-  if (aSkip > 40) {
-    const crit = DAYS.filter(d=>d.skipRate>55).map(d=>d.day).join(', ');
-    items.push(`<div class="health-item"><div class="health-dot"></div><div class="health-text">
-      <strong>Skip Rate: ${aSkip.toFixed(1)}% average${crit?' — critical on '+crit:''}</strong>
-      <span>Instagram ranks skip rate as the #1 signal impacting reach.</span>
-    </div></div>`);
+  // Latest snapshot metrics table
+  const latest = video.latest;
+  if (!latest) {
+    document.querySelector('#detail-metrics-table tbody').innerHTML =
+      '<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px">No snapshot data</td></tr>';
+    return;
   }
-  if (aFR < 0.20) {
-    const crit = DAYS.filter(d=>followRate(d)<0.10).map(d=>d.day).join(', ');
-    items.push(`<div class="health-item"><div class="health-dot"></div><div class="health-text">
-      <strong>Follow Rate: ${aFR.toFixed(3)}% average — critical on ${crit||'multiple days'}</strong>
-      <span>The series isn't converting viewers into subscribers.</span>
-    </div></div>`);
-  }
-  if (aWP < 50) {
-    const low = DAYS.filter(d=>{const w=watchPct(d); return w!==null && w<40;}).map(d=>d.day).join(', ');
-    items.push(`<div class="health-item"><div class="health-dot" style="background:#f59e0b"></div><div class="health-text">
-      <strong>Avg Watch %: ${aWP.toFixed(1)}%${low?' — below 40% on '+low:''}</strong>
-      <span>Viewers aren't reaching the end of longer reels.</span>
-    </div></div>`);
-  }
-  document.getElementById('series-health').innerHTML =
-    '<div class="panel-title">🚨 Series Health</div>' +
-    (items.join('') || '<p style="color:#888;font-size:13px;margin-top:8px">No critical alerts. Keep it up.</p>');
+
+  const rows2 = Object.entries(FIELD_LABELS)
+    .filter(([key]) => latest[key] != null)
+    .map(([key, label]) => {
+      let val = latest[key];
+      if (typeof val === 'number') val = Number(val).toLocaleString();
+      return `<tr><td>${label}</td><td>${val}</td></tr>`;
+    });
+
+  document.querySelector('#detail-metrics-table tbody').innerHTML =
+    rows2.length > 0
+      ? rows2.join('')
+      : '<tr><td colspan="2" style="color:var(--text-muted);text-align:center;padding:20px">No fields with data</td></tr>';
 }
 
-// ── Bootstrap ─────────────────────────────────────────────────────────────
+// ── Bootstrap ────────────────────────────────────────────────────────────────
 fetch('metrics_cache.json')
   .then(r => r.json())
-  .then(renderDashboard)
-  .catch(e => {
-    document.body.innerHTML = `<p style="padding:40px;color:#ef4444">Failed to load metrics_cache.json: ${e}</p>`;
+  .then(cache => {
+    const rows = normalizeCacheToFlat(cache);
+    renderDashboard(rows);
+  })
+  .catch(err => {
+    console.error(err);
+    document.body.innerHTML += '<p style="color:red;padding:24px;font-size:14px">Failed to load metrics_cache.json — ' + err.message + '</p>';
   });
-    </script>
-    </body>
-    </html>
+</script>
+</body>
+</html>
