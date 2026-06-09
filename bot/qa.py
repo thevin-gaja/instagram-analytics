@@ -1,21 +1,23 @@
-import json
 import anthropic
+from bot.analytics import build_analytics_summary
 
 QA_SYSTEM_PROMPT = """You are an analytics assistant for Instagram Reels performance data.
-Answer questions concisely using numbers, percentages, and video IDs (e.g. D3, D7).
-If data is missing or null, say so. Answer only from the data provided."""
+You are given a pre-computed analytics summary. Answer questions using specific numbers,
+video names, and percentages. Be concise. If data is missing (shown as —), say so.
+Reference videos by name (e.g. "Day 10") or ID (e.g. V10), not just ID."""
 
 
 def answer_question(question: str, cache: dict, api_key: str) -> str:
-    """Answer a natural language question about the metrics cache using Claude."""
+    """Answer a natural language question using a pre-computed analytics summary."""
+    summary = build_analytics_summary(cache)
     client = anthropic.Anthropic(api_key=api_key)
     response = client.messages.create(
-        model="claude-3-haiku-20240307",
-        max_tokens=512,
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
         system=QA_SYSTEM_PROMPT,
         messages=[{
             "role": "user",
-            "content": f"Data:\n{json.dumps(cache)}\n\nQuestion: {question}",
+            "content": f"{summary}\n\nQuestion: {question}",
         }],
     )
     return response.content[0].text.strip()
