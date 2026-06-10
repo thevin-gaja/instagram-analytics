@@ -1209,5 +1209,39 @@
         "ageBracket": null
       }
     ]
+  },
+  "V12": {
+    "id": "V12",
+    "name": "Day 11",
+    "posted_at": "2026-06-09T23:34:10.801494+00:00",
+    "snapshots": [
+      {
+        "captured_at": "2026-06-10T00:34:08.474280+00:00",
+        "hours_since_post": 1,
+        "views": 1215,
+        "reached": 580,
+        "reelLength": null,
+        "watchTime": 15,
+        "follows": 2,
+        "topSource": null,
+        "skipRate": null,
+        "likeRate": null,
+        "shareRate": null,
+        "saveRate": null,
+        "repostRate": null,
+        "commentRate": null,
+        "ret3s": null,
+        "retEnd": null,
+        "profileVisits": null,
+        "likes": 64,
+        "comments": 7,
+        "reposts": 5,
+        "shares": 2,
+        "saves": 1,
+        "nonFollower": null,
+        "ageBracket": null,
+        "views_at_hour": 973
+      }
+    ]
   }
 }
