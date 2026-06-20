@@ -1302,6 +1302,33 @@
         "nonFollower": null,
         "ageBracket": null,
         "views_at_hour": 628
+      },
+      {
+        "captured_at": "2026-06-20T23:22:35.303298+00:00",
+        "hours_since_post": 1,
+        "views": null,
+        "reached": null,
+        "reelLength": null,
+        "watchTime": 8,
+        "follows": 0,
+        "topSource": null,
+        "skipRate": 53.4,
+        "likeRate": 8.5,
+        "shareRate": 0.1,
+        "saveRate": 0.3,
+        "repostRate": null,
+        "commentRate": null,
+        "ret3s": null,
+        "retEnd": null,
+        "profileVisits": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "shares": null,
+        "saves": null,
+        "nonFollower": null,
+        "ageBracket": null,
+        "views_at_hour": 1157
       }
     ]
   }
